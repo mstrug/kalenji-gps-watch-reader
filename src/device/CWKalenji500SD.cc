@@ -349,7 +349,7 @@ namespace device
 		for(auto& session : *oSessions)
 		{
 			std::cout << "Retrieve session " << (int) session.second.getId().back() << std::endl;
-			time_t current_time = session.second.getTime();
+			time_t current_time = session.second.getTimeT();
 			dataAckData5[6] = session.second.getId().back();
 			dataAckData5[12] = 0xAF ^ dataAckData5[6];
 			_dataSource->write_data(0x01, dataAckData5, lengthAckData);

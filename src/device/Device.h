@@ -21,6 +21,12 @@ namespace device
 		unsigned int productId;
 	};
 
+	enum DeviceTarget
+	{
+		Running,
+		Biking
+	};
+
 	/**
 	  An interface for a GPS device.
 	 */
@@ -63,6 +69,8 @@ namespace device
 			virtual std::string getName() = 0;
 
 			virtual DeviceId getDeviceId() = 0;
+
+			virtual DeviceTarget getDeviceTarget() { return Running; }
 
 		protected:
 			std::map<std::string, std::string> _configuration;

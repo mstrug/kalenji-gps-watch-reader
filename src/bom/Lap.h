@@ -13,7 +13,9 @@ class Lap
 			_max_speed(FieldUndef), _avg_speed(FieldUndef),
 			_max_hr(FieldUndef),    _avg_hr(FieldUndef),
 			_calories(FieldUndef),  _grams(FieldUndef),
-			_ascent(FieldUndef),    _descent(FieldUndef)
+			_ascent(FieldUndef),    _descent(FieldUndef),
+			_min_alt(FieldUndef),   _max_alt(FieldUndef),
+			_avg_cad(FieldUndef),   _max_cad(FieldUndef)
 		{ };
 
 		Lap(uint32_t firstPointId,    uint32_t lastPointId,
@@ -28,7 +30,9 @@ class Lap
 				_max_speed(max_speed), _avg_speed(avg_speed),
 				_max_hr(max_hr), _avg_hr(avg_hr),
 				_calories(calories), _grams(grams),
-				_ascent(ascent), _descent(descent)
+				_ascent(ascent), _descent(descent),
+				_min_alt(FieldUndef),   _max_alt(FieldUndef),
+				_avg_cad(FieldUndef),   _max_cad(FieldUndef)
 		{ };
 
 		void setLapNum(uint32_t lapNum)         { _lapNum = lapNum; };
@@ -47,6 +51,10 @@ class Lap
 		void setDescent(uint32_t descent)       { _descent = descent; };
 		void setFirstPointId(uint32_t pid)      { _firstPointId = pid; };
 		void setLastPointId(uint32_t pid)       { _lastPointId = pid; };
+		void setMinAltitude(uint32_t alt)       { _min_alt = alt; };
+		void setMaxAltitude(uint32_t alt)     	{ _max_alt = alt; };
+		void setAvgCadence(uint32_t cad)   		{ _avg_cad = cad; };
+		void setMaxCadence(uint32_t cad)   		{ _max_cad = cad; };
 
 		uint32_t getLapNum() const                     { return _lapNum; };
 		uint32_t getFirstPointId() const               { return _firstPointId; };
@@ -64,6 +72,12 @@ class Lap
 		const Field<uint32_t>& getGrams() const        { return _grams; };
 		const Field<uint32_t>& getAscent() const       { return _ascent; };
 		const Field<uint32_t>& getDescent() const      { return _descent; };
+		const Field<uint32_t>& getMinAltitude() const  { return _min_alt; };
+		const Field<uint32_t>& getMaxAltitude() const  { return _max_alt; };
+		const Field<uint32_t>& getAvgCadence() const   { return _avg_cad; };
+		const Field<uint32_t>& getMaxCadence() const   { return _max_cad; };
+
+		void getSummary(std::ostream& os) const;
 
 	private:
 		uint32_t _lapNum;
@@ -83,6 +97,12 @@ class Lap
 		Field<uint32_t> _grams;
 		Field<uint32_t> _ascent;
 		Field<uint32_t> _descent;
+		Field<uint32_t> _min_alt;
+		Field<uint32_t> _max_alt;
+		Field<uint32_t> _avg_cad;
+		Field<uint32_t> _max_cad;
 };
+
+std::ostream& operator<<(std::ostream& os, const Lap& lap);
 
 #endif

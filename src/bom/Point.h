@@ -13,11 +13,11 @@ class Point
 {
 	public:
 		// TODO: Improve the way fiability is handled (0 / 3 doesn't make sense)
-		Point() : _time(0), _millis(0), _lat(FieldUndef), _lon(FieldUndef), _alt(FieldUndef), _speed(FieldUndef), _bpm(FieldUndef), _fiability(3), _important(false), _distance(FieldUndef)
+		Point() : _time(0), _millis(0), _lat(FieldUndef), _lon(FieldUndef), _alt(FieldUndef), _speed(FieldUndef), _bpm(FieldUndef), _cadence(FieldUndef), _fiability(3), _important(false), _distance(FieldUndef)
 		{ };
 
 		Point(Field<double> lat, Field<double> lon, Field<int16_t> alt, Field<double> speed, time_t time, uint32_t millis, Field<uint16_t> bpm, uint16_t fiability)
-			: _time(time), _millis(millis), _lat(lat), _lon(lon), _alt(alt), _speed(speed), _bpm(bpm), _fiability(fiability), _important(false), _distance(FieldUndef)
+			: _time(time), _millis(millis), _lat(lat), _lon(lon), _alt(alt), _speed(speed), _bpm(bpm), _cadence(FieldUndef), _fiability(fiability), _important(false), _distance(FieldUndef)
 		{ };
 
 		void setLatitude(const Field<double>& lat)        { _lat = lat; };
@@ -25,6 +25,7 @@ class Point
 		void setAltitude(const Field<int16_t>& alt)       { _alt = alt; };
 		void setSpeed(const Field<double>& speed)         { _speed = speed; };
 		void setHeartRate(const Field<uint16_t>& bpm)     { _bpm = bpm; };
+		void setCadence(uint16_t c) 					  { _cadence = c; }
 		void setFiability(uint16_t f)                     { _fiability = f; };
 		void setImportant(bool i)                         { _important = i; };
 		void setTime(time_t time)                         { _time = time; };
@@ -35,6 +36,7 @@ class Point
 		const Field<int16_t>& getAltitude() const   { return _alt; };
 		const Field<double>& getSpeed() const       { return _speed; };
 		const Field<uint16_t>& getHeartRate() const { return _bpm; };
+		const Field<uint16_t>& getCadence() const   { return _cadence; };
 		uint16_t getFiability() const               { return _fiability; };
 		bool isImportant() const                    { return _important; };
 		time_t getTime() const                      { return _time; };
@@ -69,6 +71,7 @@ class Point
 		Field<int16_t>  _alt;
 		Field<double>   _speed;
 		Field<uint16_t> _bpm;
+		Field<uint16_t> _cadence;
 		uint16_t _fiability;
 		bool _important;
 		Field<uint32_t> _distance; //Distance in meter from the begining: if -1, must be computed by the session see Session::getDistanceForPoint(Point point);

@@ -43,7 +43,8 @@ namespace device
 			 */
 			void getSessionsDetails(SessionsMap *oSessions) override;
 
-			std::string getName() override { return "Kalenji"; };
+			std::string getName() override;
+			DeviceTarget getDeviceTarget() override;
 			DeviceId getDeviceId() override { return { 0x0483, 0x5740 }; };
 
 		private:
@@ -59,9 +60,10 @@ namespace device
 			enum KalenjiType
 			{
 				GH675,
-				Keymaze700Trail
+				Keymaze700Trail,
+				MioCyclo105
 			} type;
-			};
+		};
 }
 
 #endif

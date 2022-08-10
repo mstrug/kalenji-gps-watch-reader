@@ -151,6 +151,7 @@ bool readConf(std::map<std::string, std::string>& options)
 	{
 		rcfile = options["rcfile"];
 	}
+	bool ret = false;
 	if(access(rcfile.c_str(), F_OK) == 0)
 	{
 		std::string line;
@@ -171,6 +172,7 @@ bool readConf(std::map<std::string, std::string>& options)
 				}
 			}
 			conf_file.close();
+			ret = true;
 		}
 		else
 		{
@@ -183,13 +185,16 @@ bool readConf(std::map<std::string, std::string>& options)
 	{
 		configuration[option.first] = option.second;
 	}
-	return true;
+	return ret;
 }
 
 bool parseConfAndOptions(int argc, char** argv)
 {
 	std::map<std::string, std::string> options = readOptions(argc, argv);
-	readConf(options);
+	if( !readConf(options) )
+	{
+		configuration["default"] = "true";
+	}
 
 	// Some configuration adaptation ...
 	// TODO: Cleaner way to handle it ?
@@ -375,6 +380,7 @@ int main(int argc, char *argv[])
 			std::cerr << "Error trying to register device " << configuration["device"] << ": Unknown device" << std::endl;
 			throw std::exception();
 		}
+
 		LOG_VERBOSE("Attaching source to device");
 		myDevice->setSource(dataSource);
 		myDevice->setConfiguration(configuration);
@@ -384,6 +390,13 @@ int main(int argc, char *argv[])
 		SessionsMap sessions;
 		LOG_VERBOSE("Get sessions list");
 		myDevice->getSessionsList(&sessions);
+
+		if(configuration["default"] == "true" && myDevice->getDeviceTarget() == device::Biking)
+		{
+			configuration["outputs"] = "GPX,TCX";
+			configuration["gpx_extensions"] = "gpxtpx";
+			configuration["tcx_sport"] = "Biking";
+		}
 
 		// If import = ask, prompt the user for sessions to import.
 		// TODO: also prompt here for trigger type (and other info not found in the watch ?). This means at session level instead of global but could also be at lap level !

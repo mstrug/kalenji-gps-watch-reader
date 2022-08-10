@@ -238,7 +238,7 @@ namespace device
 	{
 		const unsigned char* chunk;
 		int numPoints = 0;
-		time_t startTime = session->getTime();
+		time_t startTime = session->getTimeT();
 		// We remove 20 bytes from the length because the last line is always a 'metadata' one,
 		// even if there's been only one 'data' line since the last one.
 		for(int i = 0; i < (length-20); i += 20)

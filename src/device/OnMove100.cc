@@ -229,7 +229,7 @@ namespace device
 				continue;
 			}
 			Session *session = &(itSession->second);
-			time_t current_time = session->getTime();
+			time_t current_time = session->getTimeT();
 			READ_MORE_DATA;
 			// Can a session have more than 65536 points ? (bytes 32 & 33 contains the point number)
 			while(responseData[32] != 0 || responseData[33] != 0)

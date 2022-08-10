@@ -44,8 +44,12 @@ namespace output
 				<< lap->getAvgHeartrate() << "</Value></AverageHeartRateBpm>" << std::endl;
 			out << "    <MaximumHeartRateBpm xsi:type=\"HeartRateInBeatsPerMinute_t\"><Value>"
 				<< lap->getMaxHeartrate() << "</Value></MaximumHeartRateBpm>" << std::endl;
+			if(lap->getAvgCadence().isDefined())
+			{
+				out << "    <Cadence>" << lap->getAvgCadence() << "</Cadence>" << std::endl;
+			}
 			out << "    <Intensity>Active</Intensity>" << std::endl;
-			out << "    <TriggerMethod>Distance</TriggerMethod>" << std::endl;
+			out << "    <TriggerMethod>Manual</TriggerMethod>" << std::endl;
 
 			// goto first point of this lap
 			while (point_id < lap->getFirstPointId()) {
@@ -76,6 +80,10 @@ namespace output
 				out << (*pit)->getHeartRate().toStream(
 					"      <HeartRateBpm xsi:type=\"HeartRateInBeatsPerMinute_t\"><Value>",
 				    "</Value></HeartRateBpm>") << std::endl;
+				if ((*pit)->getCadence().isDefined())
+				{
+					out << "      <Cadence>" << (*pit)->getCadence() << "</Cadence>" << std::endl;
+				}
 				out << "      <Extensions>" << std::endl;
 				out << "       <TPX xmlns=\"http://www.garmin.com/xmlschemas/ActivityExtension/v2\" CadenceSensor=\"Footpod\">" << std::endl;
 				if((*pit)->getSpeed().isDefined())
@@ -95,6 +103,19 @@ namespace output
 		}
 
 		// TODO: creator
+
+		/*<Creator xsi:type="Device_t">
+		        <Name>Cyclo105</Name>
+		        <UnitId>3700000000</UnitId>
+		        <ProductID>105</ProductID>
+		        <Version>
+		          <VersionMajor>2</VersionMajor>
+		          <VersionMinor>80</VersionMinor>
+		          <BuildMajor>0</BuildMajor>
+		          <BuildMinor>0</BuildMinor>
+		        </Version>
+		      </Creator>*/
+
 		out << "  </Activity>" << std::endl;
 		out << " </Activities>" << std::endl;
 

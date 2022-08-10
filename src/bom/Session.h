@@ -19,14 +19,16 @@ class Session
 		Session() : _id(0), _name("No name"), _num(0), _nb_points(0),
 		            _duration(0), _distance(0), _max_speed(FieldUndef), _avg_speed(FieldUndef),
 			    _max_hr(FieldUndef), _avg_hr(FieldUndef), _calories(FieldUndef), _grams(FieldUndef),
-			    _ascent(FieldUndef), _descent(FieldUndef), _nb_laps(0)
+			    _ascent(FieldUndef), _descent(FieldUndef), _min_alt(FieldUndef), _max_alt(FieldUndef),
+				 _avg_cad(FieldUndef), _max_cad(FieldUndef), _nb_laps(0)
 		{ }
 
 		Session(SessionId id, uint32_t num, tm time, uint32_t nb_points, double duration, uint32_t distance, uint32_t nb_laps) :
 			         _id(std::move(id)), _name("No name"), _num(num), _local_time(time), _nb_points(nb_points),
 				 _duration(duration), _distance(distance), _max_speed(FieldUndef), _avg_speed(FieldUndef),
 				 _max_hr(FieldUndef), _avg_hr(FieldUndef), _calories(FieldUndef), _grams(FieldUndef),
-				 _ascent(FieldUndef), _descent(FieldUndef), _nb_laps(nb_laps)
+				 _ascent(FieldUndef), _descent(FieldUndef), _min_alt(FieldUndef), _max_alt(FieldUndef),
+				 _avg_cad(FieldUndef), _max_cad(FieldUndef), _nb_laps(nb_laps)
 		{
 			convertToGMT();
 		}
@@ -79,6 +81,10 @@ class Session
 		void setGrams(const Field<uint32_t>& grams)       { _grams = grams; };
 		void setAscent(const Field<uint32_t>& ascent)     { _ascent = ascent; };
 		void setDescent(const Field<uint32_t>& descent)   { _descent = descent; };
+		void setMinAltitude(const Field<uint32_t>& alt)   { _min_alt = alt; };
+		void setMaxAltitude(const Field<uint32_t>& alt)   { _max_alt = alt; };
+		void setAvgCadence(const Field<uint32_t>& cad)    { _avg_cad = cad; };
+		void setMaxCadence(const Field<uint32_t>& cad)    { _max_cad = cad; };
 
 		// TODO: As for time manipulation done in Point, to move in a "utils" part
 		const std::string getBeginTime(bool human_readable=false) const
@@ -103,6 +109,7 @@ class Session
 		const SessionId getId() const                  { return _id; };
 		const std::string getName() const              { return _name; };
 		void getSummary(std::ostream& os) const;
+		void getSummaryLong(std::ostream& os) const;
 		int getYear() const                            { return _local_time.tm_year + 1900; };
 		int getMonth() const                           { return _local_time.tm_mon + 1; };
 		int getDay() const                             { return _local_time.tm_mday; };
@@ -120,9 +127,14 @@ class Session
 		const Field<uint32_t>& getGrams() const        { return _grams; };
 		const Field<uint32_t>& getAscent() const       { return _ascent; };
 		const Field<uint32_t>& getDescent() const      { return _descent; };
+		const Field<uint32_t>& getMinAltitude() const  { return _min_alt; };
+		const Field<uint32_t>& getMaxAltitude() const  { return _max_alt; };
+		const Field<uint32_t>& getAvgCadence() const   { return _avg_cad; };
+		const Field<uint32_t>& getMaxCadence() const   { return _max_cad; };
 
 		uint32_t getNbLaps() const                     { return _nb_laps; };
-		time_t getTime() const                         { return _time_t; };
+		time_t getTimeT() const                        { return _time_t; };
+		tm getTime() const                             { return _time; };
 
 		/* If watches doesn't set the distance for each point, we must try to compute them.
 		 * TODO: check against laps if computation is good enougth
@@ -170,6 +182,10 @@ class Session
 		Field<uint32_t> _grams;
 		Field<uint32_t> _ascent;
 		Field<uint32_t> _descent;
+		Field<uint32_t> _min_alt;
+		Field<uint32_t> _max_alt;
+		Field<uint32_t> _avg_cad;
+		Field<uint32_t> _max_cad;
 
 		uint32_t _nb_laps;
 		std::vector<Lap*> _laps;

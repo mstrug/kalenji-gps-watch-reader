@@ -218,7 +218,7 @@ namespace device
 			*/
 			SessionId id = SessionId(responseData[34], responseData[34]+1);
 			Session *session = &(oSessions->find(id)->second);
-			time_t start_time = session->getTime();
+			time_t start_time = session->getTimeT();
 			READ_MORE_DATA;
 			// Can a session have more than 65536 points ? (bytes 32 & 33 contains the point number)
 			double prevDistance = 0;

@@ -120,10 +120,10 @@ namespace output
 			out << "\"" << std::dec << std::setw(0) << std::setfill(' ');
 			// TODO: Use max hr and min hr to determine the width range
 
-			uint32_t elapsed = ((*it)->getTime() - session->getTime()) * 1000; // in ms
+			uint32_t elapsed = ((*it)->getTime() - session->getTimeT()) * 1000; // in ms
 			out << ", elapsed: " << elapsed;
 			out << ", time: \"" << (*it)->getTimeAsString(true, true) << "\""; //TODO
-			out << ", duration: \"" << durationAsString((*it)->getTime() - session->getTime()) << "\"";
+			out << ", duration: \"" << durationAsString((*it)->getTime() - session->getTimeT()) << "\"";
 			out << ", speed: " << speed;
 			out << ", heartrate: ";
 			if((*it)->getHeartRate().isDefined())

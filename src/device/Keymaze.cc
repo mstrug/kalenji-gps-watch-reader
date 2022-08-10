@@ -355,7 +355,7 @@ namespace device
 				{
 					session = &(it->second);
 					std::vector<Point*> points = session->getPoints();
-					time_t current_time = session->getTime();
+					time_t current_time = session->getTimeT();
 					if(!points.empty())
 					{
 						current_time = points.back()->getTime();

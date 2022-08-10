@@ -55,10 +55,20 @@ namespace output
 			if(gpxdata_ext)
 			{
 				out << point->getHeartRate().toStream("          <gpxdata:hr>", "</gpxdata:hr>\n");
+				if (point->getCadence().isDefined())
+				{
+					out << point->getCadence().toStream("          <gpxdata:cadence>", "</gpxdata:cadence>\n");
+				}
 			}
 			if(gpxtpx_ext)
 			{
-				out << point->getHeartRate().toStream("          <gpxtpx:TrackPointExtension><gpxtpx:hr>", "</gpxtpx:hr></gpxtpx:TrackPointExtension>\n");
+				out << "          <gpxtpx:TrackPointExtension>" << std::endl;
+				out << point->getHeartRate().toStream("            <gpxtpx:hr>", "</gpxtpx:hr>\n");
+				if (point->getCadence().isDefined())
+				{
+					out << point->getCadence().toStream("            <gpxtpx:cad>", "</gpxtpx:cad>\n");
+				}
+				out << "          </gpxtpx:TrackPointExtension>" << std::endl;
 			}
 			if(has_extension)
 			{

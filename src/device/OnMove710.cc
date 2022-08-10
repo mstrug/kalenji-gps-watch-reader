@@ -287,7 +287,7 @@ namespace device
 	void OnMove710::parseGHPFile(unsigned char* bytes, int length, Session* session)
 	{
 		unsigned char* chunk;
-		time_t current_time = session->getTime();
+		time_t current_time = session->getTimeT();
 		uint32_t cumulated_tenth = 0;
 		uint32_t id_point = 0;
 		auto lap = session->getLaps().begin();

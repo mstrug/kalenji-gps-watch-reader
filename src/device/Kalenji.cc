@@ -27,6 +27,7 @@ namespace device
 		std::string typeGH = "GH-675";
 		std::string typeKeymaze700 = "Keymaze 700 Trial";
 		std::string typeKeymaze500 = "Keymaze 500 Hiking";
+		std::string typeMioCyclo105 = "Mio Cyclo 105";
 		if(memcmp(&(responseData[3]), typeGH.c_str(), typeGH.size()) == 0)
 		{
 			type = GH675;
@@ -42,10 +43,30 @@ namespace device
 			type = Keymaze700Trail;
 			std::cout << "Using device type " << typeKeymaze500 << std::endl;
 		}
+		else if(memcmp(&(responseData[3]), typeMioCyclo105.c_str(), typeMioCyclo105.size()) == 0)
+		{
+			type = MioCyclo105;
+			uint16_t ver = responseData[25] + (responseData[26] << 8);
+			std::cout << "Using device type " << typeMioCyclo105 << std::endl;
+			std::cout << "  FW version: " << ver / 100 << "." << std::setw(2) << std::setfill('0') << ver % 100 << std::endl;
+			std::cout << "  FW name: " << std::string((char*)&responseData[29]) << std::endl;
+			std::cout << "  Device owner: " << std::string((char*)&responseData[47]) << std::endl;
+		}
 		else
 		{
 			std::cerr << "Unsupported device type for Kalenji: " << &(responseData[3]) << std::endl;
 		}
+	}
+
+	std::string Kalenji::getName()
+	{
+		if (type == MioCyclo105) return "MioCyclo105";
+		else return "Kalenji";
+	}
+	DeviceTarget Kalenji::getDeviceTarget()
+	{
+		if (type == MioCyclo105) return Biking;
+		else return Running;
 	}
 
 	void Kalenji::getSessionsList(SessionsMap *oSessions)
@@ -192,14 +213,47 @@ namespace device
 				// TODO: This find can fail (already occured: communication error ? - kalenji_reader_20150606_212854.log (next attempt succeeded))
 				Session *session = &(oSessions->find(id)->second);
 				LOG_VERBOSE("Kalenji::getSessionsDetails() Filling session header: " << *session);
-				double max_speed = (responseData[55] + (responseData[56] << 8)) / 100.0;
-				double avg_speed = (responseData[57] + (responseData[58] << 8)) / 100.0;
-				session->setMaxSpeed(max_speed);
-				session->setAvgSpeed(avg_speed);
-				uint32_t ascent = responseData[70] + (responseData[71] << 8);
-				uint32_t descent = responseData[72] + (responseData[73] << 8);
-				session->setAscent(ascent);
-				session->setDescent(descent);
+				if (type == MioCyclo105)
+				{
+					double max_speed = (responseData[31] + (responseData[32] << 8)) / 100.0;
+					double avg_speed = ((double)session->getDistance() / 1000.0) / (session->getDuration() / 3600.0);
+					session->setMaxSpeed(max_speed);
+					session->setAvgSpeed(avg_speed);
+					uint32_t ascent = responseData[39] + (responseData[40] << 8);
+					uint32_t descent = responseData[37] + (responseData[38] << 8);
+					session->setAscent(ascent);
+					session->setDescent(descent);
+					uint32_t calories = responseData[27] + (responseData[28] << 8);
+					uint32_t avgHR = responseData[36];
+					uint32_t maxHR = responseData[35];
+					session->setCalories(calories);
+					session->setAvgHr(avgHR);
+					session->setMaxHr(maxHR);
+					uint32_t minAlt = responseData[41] + (responseData[42] << 8);
+					uint32_t maxAlt = responseData[43] + (responseData[44] << 8);
+					uint32_t avgCad = responseData[45] + (responseData[46] << 8);
+					uint32_t maxCad = responseData[47] + (responseData[48] << 8);
+					session->setMinAltitude(minAlt);
+					session->setMaxAltitude(maxAlt);
+					session->setAvgCadence(avgCad);
+					session->setMaxCadence(maxCad);
+
+					char buffer[256];
+					tm tt = session->getTime();
+					strftime(buffer, 256, "%Y%m%d%H%M%S", &tt);
+					session->setName(buffer);
+				}
+				else
+				{
+					double max_speed = (responseData[55] + (responseData[56] << 8)) / 100.0;
+					double avg_speed = (responseData[57] + (responseData[58] << 8)) / 100.0;
+					session->setMaxSpeed(max_speed);
+					session->setAvgSpeed(avg_speed);
+					uint32_t ascent = responseData[70] + (responseData[71] << 8);
+					uint32_t descent = responseData[72] + (responseData[73] << 8);
+					session->setAscent(ascent);
+					session->setDescent(descent);
+				}
 				_dataSource->write_data(0x03, dataMore, lengthDataMore);
 			}
 
@@ -229,6 +283,10 @@ namespace device
 				{
 					sizeRecord = 54;
 					sizeLap = 48;
+				}
+				if (type == MioCyclo105)
+				{
+					sizeLap = 40;
 				}
 				size_t nbRecords = (size - sizeRecord) / sizeLap;
 				if(nbRecords * sizeLap != size - sizeRecord)
@@ -261,7 +319,7 @@ namespace device
 					{
 						sum_calories = 0;
 					}
-					else
+					else if (type != MioCyclo105)
 					{
 						if(calories < sum_calories)
 						{
@@ -272,9 +330,9 @@ namespace device
 						calories -= sum_calories;
 					}
 					sum_calories += calories;
-					uint32_t grams = line[28] + (line[29] << 8);
-					uint32_t descent = line[30] + (line[31] << 8);
-					uint32_t ascent = line[32] + (line[33] << 8);
+					Field<uint32_t> grams = line[28] + (line[29] << 8);
+					Field<uint32_t> descent = line[30] + (line[31] << 8);
+					Field<uint32_t> ascent = line[32] + (line[33] << 8);
 					uint32_t firstPoint = line[40] + (line[41] << 8);
 					uint32_t lastPoint = line[42] + (line[43] << 8);
 					// -8<--- DIRTY: Ugly bug in the firmware, some laps have ff ff where there should be points ids
@@ -303,15 +361,46 @@ namespace device
 						max_hr = line[23];
 						avg_hr = line[22];
 						calories = line[24] + (line[25] << 8);
-						grams = 0;
+						grams = FieldUndef;
 						descent = line[38] + (line[39] << 8);
 						ascent = line[40] + (line[41] << 8);
 						firstPoint = line[26] + (line[27] << 8);
 						lastPoint = line[28] + (line[29] << 8);
 					}
+					else if (type == MioCyclo105)
+					{
+						calories = line[12] + (line[13] << 8) + (line[14] << 16) + (line[15] << 24);
+						max_speed = (line[16] + (line[17] << 8) + (line[18] << 16) + (line[19] << 24)) / 100.0;
+						firstPoint = line[36] + (line[37] << 8);
+						lastPoint = line[38] + (line[39] << 8);
+						avg_speed = ((double)length / 1000.0) / (duration / 3600.0);
+						grams = FieldUndef;
+						if( session->getNbLaps() <= 1 )
+						{
+							descent = session->getDescent();
+							ascent = session->getAscent();
+						}
+						else
+						{
+							descent = FieldUndef;
+							ascent = FieldUndef;
+						}
+					}
 					auto lap = new Lap(firstPoint, lastPoint, duration, length, max_speed, avg_speed, max_hr, avg_hr, calories, grams, descent, ascent);
 					lap->setLapNum(i);
+					if(type == MioCyclo105)
+					{
+						uint16_t min_attitude = line[22] + (line[23] << 8);
+						uint16_t max_attitude = line[24] + (line[25] << 8);
+						uint16_t avg_cadence = line[26] + (line[27] << 8);
+						uint16_t max_cadence = line[28] + (line[29] << 8);
+						lap->setMinAltitude(min_attitude);
+						lap->setMaxAltitude(max_attitude);
+						lap->setAvgCadence(avg_cadence);
+						lap->setMaxCadence(max_cadence);
+					}
 					session->addLap(lap);
+					LOG_VERBOSE("Kalenji::getSessionsDetails() lap: " << *lap);
 				}
 				_dataSource->write_data(0x03, dataMore, lengthDataMore);
 				_dataSource->read_data(0x81, &responseData, &received);
@@ -341,7 +430,7 @@ namespace device
 				session = &(oSessions->find(id)->second);
 				LOG_VERBOSE("Kalenji::getSessionsDetails() Filling session points: " << *session);
 				std::vector<Point*> points = session->getPoints();
-				time_t current_time = session->getTime();
+				time_t current_time = session->getTimeT();
 				if(!points.empty())
 				{
 					current_time = points.back()->getTime();
@@ -354,10 +443,14 @@ namespace device
 					sizeRecord = 54;
 					sizePoint = 17;
 				}
+				if (type == MioCyclo105)
+				{
+					sizePoint = 32;
+				}
 				size_t nbRecords = (size - sizeRecord) / sizePoint;
 				if(nbRecords * sizePoint != size - sizeRecord)
 				{
-					std::cerr << "Size is not a multiple of " << sizePoint << " plus " << sizeRecord << " in getSessionsDetails (step 3) !" << std::endl;
+					std::cerr << "Size is not a multiple of " << sizePoint << " plus " << sizeRecord << " in getSessionsDetails (step 3) !  size: " << size << std::endl;
 					// TODO: throw an exception
 				}
 				auto lap = session->getLaps().begin();
@@ -393,7 +486,22 @@ namespace device
 							current_time += cumulated_tenth / 100;
 							cumulated_tenth = cumulated_tenth % 100;
 						}
+						else if(type == MioCyclo105)
+						{
+							bpm = line[16] + (line[17] << 8);
+							speed = ((double)(line[12] + (line[13] << 8)) / 100.0);
+							fiability = 3;
+							cumulated_tenth += line[20];
+							current_time += cumulated_tenth / 10;
+							cumulated_tenth = cumulated_tenth % 10;
+							//uint16_t temperature = line[28] + (line[29] << 8);
+						}
 						auto point = new Point(lat, lon, alt, speed, current_time, cumulated_tenth*100, bpm, fiability);
+						if(type == MioCyclo105)
+						{
+							uint16_t cadence = line[24] + (line[25] << 8);
+							point->setCadence(cadence);
+						}
 						session->addPoint(point);
 					}
 					if(lap != session->getLaps().end() && id_point == (*lap)->getFirstPointId())
