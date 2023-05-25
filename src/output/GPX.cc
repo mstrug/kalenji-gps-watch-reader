@@ -51,6 +51,10 @@ namespace output
 			if(has_extension)
 			{
 				out << "        <extensions>" << std::endl;
+				if (point->getPower().isDefined())
+				{
+					out << point->getPower().toStream("          <power>", "</power>\n");
+				}
 			}
 			if(gpxdata_ext)
 			{

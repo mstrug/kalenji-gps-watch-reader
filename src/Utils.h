@@ -12,6 +12,7 @@
 #include <ctime>
 #include <cstring>
 
+#define localtime_s localtime_r
 void localtime_r (const time_t *timer, struct tm *result);
 void gmtime_r (const time_t *timer, struct tm *result);
 #endif

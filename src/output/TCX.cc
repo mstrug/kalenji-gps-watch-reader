@@ -26,6 +26,8 @@ namespace output
 		std::vector<Point*> points = session->getPoints();
 		auto pit = points.begin();
 		uint32_t point_id = 0;
+		double total_dist = 0;
+		Point* prev_point = *points.begin();
 		for(const auto& lap : laps)
 		{
 			if(lap->getStartPoint() != nullptr)
@@ -60,12 +62,10 @@ namespace output
 			}
 
 			out << "    <Track>" << std::endl;
-			double total_dist = 0;
-			time_t prev_time = (*points.begin())->getTime();
 			for(; pit != points.end(); ++pit, ++point_id)
 			{
-				double delta_tm = difftime((*pit)->getTime(), prev_time);
-				total_dist += delta_tm * (*pit)->getSpeed() / 3.6;
+				total_dist += (*pit)->distanceFromInMeters(*prev_point);
+
 				out << "     <Trackpoint>" << std::endl;
 				out << "      <Time>" << (*pit)->getTimeAsString() << "</Time>" << std::endl;
 				if ((*pit)->getLatitude().isDefined() && (*pit)->getLongitude().isDefined())
@@ -90,11 +90,15 @@ namespace output
 				{
 					out << "         <Speed>" << (*pit)->getSpeed() / 3.6 << "</Speed>" << std::endl;
 				}
+				if((*pit)->getPower().isDefined())
+				{
+					out << "         <Watts>" << (*pit)->getPower() << "</Watts>" << std::endl;
+				}
 				out << "       </TPX>" << std::endl;
 				out << "      </Extensions>" << std::endl;
 				out << "     </Trackpoint>" << std::endl;
 
-				prev_time = (*pit)->getTime();
+				prev_point = *pit;
 				if (point_id == lap->getLastPointId())
 					break;
 			}
