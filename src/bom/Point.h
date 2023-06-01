@@ -74,6 +74,11 @@ class Point
 			double lat2 = p._lat.getValue();
 			double lon2 = p._lon.getValue();
 
+			if ( lat1 == lat2 && lon1 == lon2 ) 
+			{
+				return 0;
+			}
+
 			double pi = 3.14159265358979323846;
 
 			double dist = sin(lat1 * pi / 180) * sin(lat2 * pi / 180) + cos(lat1 * pi / 180) * cos(lat2 * pi / 180) * cos((lon1 - lon2) * pi / 180);

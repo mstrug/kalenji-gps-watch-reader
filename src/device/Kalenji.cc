@@ -505,7 +505,7 @@ namespace device
 						auto point = new Point(lat, lon, alt, speed, current_time, cumulated_tenth*100, bpm, fiability);
 						if(type == MioCyclo105)
 						{
-							uint16_t cadence_from_power_sensor = line[26] + (line[27] << 8);
+							//uint16_t cadence_from_power_sensor = line[26] + (line[27] << 8);
 							uint16_t cadence = line[24] + (line[25] << 8);
 							/*if ( speed != 0 && cadence < cadence_from_power_sensor && cadence == 0 && cadence_from_power_sensor != 0 )
 							{ // fix for issues with cadence sensor
@@ -513,13 +513,13 @@ namespace device
 							}*/
 							point->setCadence(cadence);
 							uint16_t power = line[28] + (line[29] << 8);
-							//if ( speed != 0 && cadence != 0 )
+							if ( cadence != 0 )
 							{
 								point->setPower(power);
 							} 
-							//else
+							else
 							{
-							//	point->setPower(0);
+								point->setPower(0);
 							} 
 						}
 						session->addPoint(point);
